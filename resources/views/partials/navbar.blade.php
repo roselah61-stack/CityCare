@@ -32,7 +32,10 @@
            class="{{ request()->is('treatmentList*') || request()->is('treatment*') ? 'active' : '' }}">
             Treatments
         </a>
-
+        <a href="{{ route('logout') }}"
+           class="{{ request()->is('logout*') || request()->is('logout*') ? 'active' : '' }}">
+            Logout
+        </a>
     </div>
 
 </div>

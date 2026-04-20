@@ -2,12 +2,24 @@
 
 @section('content')
 
+@if(auth()->user()->role && auth()->user()->role->name === 'admin')
+    <a href="/admin/users">Manage Users</a>
+@endif
+
+@if(auth()->user()->role && auth()->user()->role->name === 'doctor')
+    <a href="/patientList">Patients</a>
+@endif
+
+@if(auth()->user()->role && auth()->user()->role->name === 'pharmacist')
+    <a href="/drugList">Drugs</a>
+@endif
+
 <div class="dashboard-shell">
 
     <div class="page-header">
         <div>
             <h2 class="title">
-                Welcome to Medicure Hospital System
+               {{ auth()->user()->name }}, Welcome to Medicure Hospital System!
             </h2><br>
 
             <p class="subtitle date-box">

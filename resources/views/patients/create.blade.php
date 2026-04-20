@@ -2,6 +2,9 @@
 
 @section('content')
 
+@canany(['isAdmin', 'isReceptionist'])
+   
+
 <div class="dashboard-shell">
 
     <div class="page-header">
@@ -82,5 +85,13 @@
     </div>
 
 </div>
+@else
+   <div class="alert alert-danger">
+       You are not allowed to add patients.
+   </div>
+@endelse
+
+@endcanany
+
 
 @endsection
