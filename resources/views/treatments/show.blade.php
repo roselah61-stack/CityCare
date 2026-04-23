@@ -4,8 +4,18 @@
 
 <div class="dashboard-shell">
 
-    <div class="page-header">
+    <div class="page-header d-flex justify-content-between align-items-center">
         <h2 class="title">Treatment Details</h2>
+        <div class="d-flex gap-2">
+            @can('isDoctor')
+            <a href="{{ route('treatment.edit', $treatment->id) }}" class="btn btn-warning btn-sm px-3 fw-600">
+                Edit
+            </a>
+            @endcan
+            <a href="{{ route('treatment.list') }}" class="btn btn-secondary btn-sm px-3 fw-600">
+                Back
+            </a>
+        </div>
     </div>
 
     <div class="panel">
@@ -33,10 +43,6 @@
                     : 'N/A' }}
             </p>
         </div>
-
-        <a href="{{ route('treatment.list') }}" class="btn btn-secondary">
-            Back
-        </a>
 
     </div>
 

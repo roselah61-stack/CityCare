@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+@include('includes.flash')
 
 <div class="dashboard-shell">
     <div class="breadcrumb-banner">

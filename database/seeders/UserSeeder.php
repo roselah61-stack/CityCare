@@ -2,33 +2,33 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\User;
+use App\Models\Role;
+use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
     public function run()
-{
-    User::create([
-        'name' => 'Admin',
-        'email' => 'admin@medicure.com',
-        'password' => bcrypt('password'),
-        'role_id' => 1
-    ]);
+    {
+        $roles = Role::all();
 
-    User::create([
-        'name' => 'Doctor',
-        'email' => 'doctor@medicure.com',
-        'password' => bcrypt('password'),
-        'role_id' => 2
-    ]);
+        foreach ($roles as $role) {
+            User::updateOrCreate(
+                ['email' => $role->name . '@citycare.com'],
+                [
+                    'name' => ucfirst($role->name) . ' User',
+                    'password' => Hash::make('password'),
+                    'role_id' => $role->id,
+                ]
+            );
+        }
 
-    User::create([
-        'name' => 'Pharmacist',
-        'email' => 'pharma@medicure.com',
-        'password' => bcrypt('password'),
-        'role_id' => 3
-    ]);
-}
+        // Create some extra doctors
+        $doctorRole = Role::where('name', 'doctor')->first();
+        if ($doctorRole) {
+            User::updateOrCreate(['email' => 'smith@citycare.com'], ['name' => 'Dr. John Smith', 'password' => Hash::make('password'), 'role_id' => $doctorRole->id]);
+            User::updateOrCreate(['email' => 'doe@citycare.com'], ['name' => 'Dr. Jane Doe', 'password' => Hash::make('password'), 'role_id' => $doctorRole->id]);
+        }
+    }
 }

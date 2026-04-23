@@ -2,54 +2,16 @@
 
     <div class="nav-brand">
         <img src="{{ asset('images/logo.png') }}" class="nav-logo">
-        <span class="hospital-name">Medicure</span>
+        <span class="hospital-name">CityCare Medical Centre</span>
     </div>
-
-<div class="navbar">
-
-    <div class="menu-toggle" onclick="toggleMenu()">
-        ☰
-    </div>
-
-    <div class="nav-links" id="navLinks">
-
-        <a href="{{ url('/dashboard') }}"
-           class="{{ request()->is('dashboard') ? 'active' : '' }}">
-            Dashboard
-        </a>
-
-        <a href="{{ route('patient.list') }}"
-           class="{{ request()->is('patientList*') || request()->is('patient*') ? 'active' : '' }}">
-            Patients
-        </a>
-
-        <a href="{{ route('drug.list') }}"
-           class="{{ request()->is('drugList*') || request()->is('drug*') ? 'active' : '' }}">
-            Drugs
-        </a>
-
-        <a href="{{ route('treatment.list') }}"
-           class="{{ request()->is('treatmentList*') || request()->is('treatment*') ? 'active' : '' }}">
-            Treatments
-        </a>
-        <a href="{{ route('logout') }}"
-           class="{{ request()->is('logout*') || request()->is('logout*') ? 'active' : '' }}">
-            Logout
-        </a>
-    </div>
-
-</div>
 
     <div class="profile-dropdown">
 
         <div class="nav-user" onclick="toggleDropdown()">
 
-            <img src="{{ session('user.image', asset('images/user.jpg')) }}"
-                 class="nav-avatar">
-
-            <span class="nav-username">
-                {{ session('user.name', 'Admin') }}
-            </span>
+            <img src="{{ auth()->user()->profile_image ? asset(auth()->user()->profile_image) . '?v=' . auth()->user()->updated_at->timestamp : asset('images/user.jpg') }}"
+                 class="nav-avatar"
+                 title="{{ auth()->user()->name ?? 'Admin' }}">
 
         </div>
 
@@ -61,6 +23,12 @@
 
             <a href="{{ route('overview') }}">
                 <i class="bi bi-speedometer2"></i> Overview
+            </a>
+
+            <hr class="dropdown-divider my-1">
+
+            <a href="{{ route('logout') }}" class="text-danger">
+                <i class="bi bi-box-arrow-right text-danger"></i> Logout
             </a>
 
         </div>
@@ -77,13 +45,8 @@ document.addEventListener("click", function (e) {
     const menu = document.getElementById("profileMenu");
     const user = document.querySelector(".nav-user");
 
-    if (!menu.contains(e.target) && !user.contains(e.target)) {
+    if (menu && user && !menu.contains(e.target) && !user.contains(e.target)) {
         menu.classList.remove("show");
     }
 });
-
-    function toggleMenu() {
-        const nav = document.getElementById('navLinks');
-        nav.classList.toggle('active');
-    }
 </script>

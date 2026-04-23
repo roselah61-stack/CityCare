@@ -27,17 +27,18 @@ class TreatmentController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'patient_id' => 'required',
-            'drug_id' => 'required',
-            'notes' => 'nullable'
+            'patient_id' => 'required|exists:patients,id',
+            'drug_id' => 'required|exists:drugs,id',
+            'details' => 'required|string',
+            'treatment_date' => 'required|date'
         ]);
 
         Treatment::create([
-    'patient_id' => $request->patient_id,
-    'drug_id' => $request->drug_id,
-    'details' => $request->details,
-    'treatment_date' => $request->treatment_date,
-]);
+            'patient_id' => $request->patient_id,
+            'drug_id' => $request->drug_id,
+            'details' => $request->details,
+            'treatment_date' => $request->treatment_date,
+        ]);
 
         return redirect()->route('treatment.list')->with('success', 'Treatment added successfully');
     }
@@ -61,7 +62,20 @@ class TreatmentController extends Controller
     public function update(Request $request, $id)
     {
         $treatment = Treatment::findOrFail($id);
-        $treatment->update($request->all());
+        
+        $request->validate([
+            'patient_id' => 'required|exists:patients,id',
+            'drug_id' => 'required|exists:drugs,id',
+            'details' => 'required|string',
+            'treatment_date' => 'required|date'
+        ]);
+
+        $treatment->update([
+            'patient_id' => $request->patient_id,
+            'drug_id' => $request->drug_id,
+            'details' => $request->details,
+            'treatment_date' => $request->treatment_date,
+        ]);
 
         return redirect()->route('treatment.list')->with('success', 'Treatment updated successfully');
     }

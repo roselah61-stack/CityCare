@@ -8,32 +8,47 @@ class UserController extends Controller
 {
     public function profile()
     {
-        return view('profile.index');
+        $user = auth()->user();
+        
+        if ($user->role->name === 'patient') {
+            $patient = \App\Models\Patient::where('email', $user->email)->first();
+            if ($patient) {
+                return redirect()->route('patient.show', $patient->id);
+            }
+        }
+        
+        return view('profile.index', compact('user'));
     }
 
-    public function update(Request $request)
+    public function updateProfile(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . auth()->id(),
+            'password' => 'nullable|min:6|confirmed',
             'profile_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $user = session()->get('user', [
-            'name' => 'Admin',
-            'image' => null
-        ]);
+        $user = auth()->user();
+        $user->name = $request->name;
+        $user->email = $request->email;
 
-        $user['name'] = $request->name;
+        if ($request->filled('password')) {
+            $user->password = \Illuminate\Support\Facades\Hash::make($request->password);
+        }
 
         if ($request->hasFile('profile_image')) {
+            // Delete old image if exists
+            if ($user->profile_image && file_exists(public_path($user->profile_image))) {
+                unlink(public_path($user->profile_image));
+            }
+
             $file = $request->file('profile_image');
             $filename = time().'_'.$file->getClientOriginalName();
             $file->move(public_path('uploads'), $filename);
-
-            $user['image'] = 'uploads/'.$filename;
+            $user->profile_image = 'uploads/'.$filename;
         }
-
-        session(['user' => $user]);
+        $user->save();
 
         return back()->with('success', 'Profile updated successfully');
     }

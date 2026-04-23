@@ -14,19 +14,23 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         Gate::define('isDoctor', function ($user) {
-            return optional($user->role)->name === 'doctor';
+            return optional($user->role)->name === 'doctor' || optional($user->role)->name === 'admin';
         });
 
         Gate::define('isPharmacist', function ($user) {
-            return optional($user->role)->name === 'pharmacist';
+            return optional($user->role)->name === 'pharmacist' || optional($user->role)->name === 'admin';
         });
 
         Gate::define('isReceptionist', function ($user) {
-            return optional($user->role)->name === 'receptionist';
+            return optional($user->role)->name === 'receptionist' || optional($user->role)->name === 'admin';
         });
 
         Gate::define('isPatient', function ($user) {
-            return optional($user->role)->name === 'patient';
+            return optional($user->role)->name === 'patient' || optional($user->role)->name === 'admin';
+        });
+
+        Gate::define('isCashier', function ($user) {
+            return optional($user->role)->name === 'cashier' || optional($user->role)->name === 'admin';
         });
     }
 }

@@ -1,21 +1,40 @@
 @extends('layouts.app')
 
 @section('content')
-
-<div class="container py-4 dashboard-shell">
-
-    <div class="row align-items-center mb-4">
-
-        <div class="col-12 col-md-8">
-            <h2 class="fw-bold mb-1">Treatment Records</h2>
-            <p class="text-muted mb-0">Manage patient treatments and medications</p>
+@include('includes.flash')
+<!-- Breadcrumb Banner -->
+<div class="breadcrumb-banner-modern mb-4" style="background-image: url('{{ asset('images/breadcrumb.jpg') }}');">
+    <div class="breadcrumb-content-modern">
+        <h2>Treatment Records</h2>
+        <div class="breadcrumb-links">
+            <a href="{{ route('dashboard') }}">Dashboard</a>
+            <span class="sep">/</span>
+            <span>Treatment Records</span>
         </div>
+    </div>
+</div>
 
-        <div class="col-12 col-md-4 text-md-end mt-3 mt-md-0">
-            <a href="{{ route('treatment.create') }}" class="btn btn-primary">
-                <i class="bi bi-heart-pulse"></i> Add Treatment
-            </a>
+<div class="content-overlap px-4">
+    <div class="dash-header p-4 rounded-4 mb-4" style="background: white; border: 1px solid var(--border); box-shadow: var(--shadow-premium);">
+        <div class="d-flex flex-column flex-md-row align-items-center justify-content-between w-100 gap-4">
+            <div class="d-flex align-items-center gap-3 gap-md-4">
+                <div class="welcome-icon-box d-flex align-items-center justify-content-center shadow-sm" style="width: 60px; height: 60px; background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(37, 99, 235, 0.2) 100%); border-radius: 16px; font-size: 28px; color: var(--primary);">
+                    <i class="bi bi-heart-pulse-fill"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold text-dark mb-0">Treatment Records</h4>
+                    <p class="text-muted mb-0 fw-500">Manage patient treatments and medications</p>
+                </div>
+            </div>
+            <div class="d-flex gap-3 w-100 w-md-auto">
+                @can('isDoctor')
+                <a href="{{ route('treatment.create') }}" class="btn btn-ent rounded-pill px-4 d-flex align-items-center gap-2 transition-all hover-lift">
+                    <i class="bi bi-heart-pulse"></i> Add Treatment
+                </a>
+                @endcan
+            </div>
         </div>
+    </div>
 
     </div>
 
@@ -76,6 +95,7 @@
             View
         </a>
 
+        @can('isDoctor')
         <a href="{{ route('treatment.edit', $treatment->id) }}"
            class="btn btn-sm btn-warning">
             Edit
@@ -94,6 +114,7 @@
             </button>
 
         </form>
+        @endcan
 
     </div>
 </td>
@@ -120,5 +141,5 @@
     </div>
 
 </div>
-
+</div>
 @endsection

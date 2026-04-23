@@ -14,8 +14,8 @@ public function create()
 public function store(Request $request)
 {
     $request->validate([
-        'name' => 'required',
-        'description' => 'required'
+        'name' => 'required|string|max:255|unique:categories,name,NULL,id,deleted_at,NULL',
+        'description' => 'required|string'
     ]);
 
     Category::create([
@@ -42,9 +42,18 @@ public function edit($id)
 public function update(Request $request, $id)
 {
     $category = Category::findOrFail($id);
-    $category->update($request->all());
+    
+    $request->validate([
+        'name' => 'required|string|max:255|unique:categories,name,' . $id . ',id,deleted_at,NULL',
+        'description' => 'required|string'
+    ]);
 
-    return redirect()->route('categories.index');
+    $category->update([
+        'name' => $request->name,
+        'description' => $request->description
+    ]);
+
+    return redirect()->route('categories.index')->with('success', 'Category updated successfully');
 }
 
 public function destroy($id)

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Medicure Login</title>
+    <title>CityCare - Login</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
@@ -20,10 +20,11 @@
             overflow: hidden;
         }
 
-        .container {
+        .container-fluid {
             display: flex;
             height: 100vh;
             width: 100%;
+            padding: 0;
         }
 
         .left {
@@ -46,7 +47,7 @@
             position: absolute;
             width: 260px;
             height: 260px;
-            background: rgba(255, 122, 24, 0.08);
+            background: rgba(21, 51, 142, 0.05);
             border-radius: 50%;
             top: -70px;
             left: -70px;
@@ -68,10 +69,11 @@
             z-index: 2;
             font-size: 32px;
             font-weight: 800;
-            color: #2c7be5;
+            color: #15338e;
             display: flex;
             align-items: center;
             gap: 10px;
+            text-decoration: none;
         }
 
         .brand img {
@@ -86,7 +88,7 @@
             margin-top: 30px;
             background: white;
             padding: 45px 35px;
-            border-radius: 16px;
+            border-radius: 0;
             box-shadow: 0 15px 40px rgba(0,0,0,0.08);
             width: 100%;
             max-width: 420px;
@@ -99,113 +101,124 @@
             font-weight: 600;
         }
 
-        input {
-            width: 100%;
-            padding: 14px;
-            margin-bottom: 15px;
-            border: 1px solid #e0e6f0;
-            border-radius: 10px;
-            background: #f9fbff;
-            outline: none;
-            display: block;
+        .form-label {
+            font-weight: 600;
+            color: #4b5563;
+            font-size: 14px;
         }
 
-        input:focus {
-            border-color: #2c7be5;
-            box-shadow: 0 0 10px rgba(44,123,229,0.15);
-            background: #fff;
+        .form-control {
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            background: #f9fafb;
+            transition: 0.3s;
         }
 
-        button {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #0d62d0, #62a9ff);
-            color: white;
+        .form-control:focus {
+            border-color: #15338e;
+            box-shadow: 0 0 0 4px rgba(21, 51, 142, 0.1);
+            background: white;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #15338e 0%, #2460af 100%);
             border: none;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            margin-top: 20px;
+            transition: 0.3s;
         }
 
-        .link {
-            text-align: center;
-            margin-top: 15px;
-            font-size: 13px;
-        }
-
-        .link a {
-            color: #2c7be5;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .error {
-            color: red;
-            font-size: 13px;
-            margin-bottom: 10px;
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(21, 51, 142, 0.2);
         }
 
         .right {
-            width: 60%;
+            width: 55%;
             position: relative;
-            margin-left: -60px;
             background: url('/images/doctors.jpg') center/cover no-repeat;
-            z-index: 1;
         }
 
         .right::before {
             content: "";
             position: absolute;
             inset: 0;
-            background: linear-gradient(
-                135deg,
-                rgba(11, 31, 58, 0.55),
-                rgba(44, 123, 229, 0.25)
-            );
+            background: linear-gradient(135deg, rgba(21, 51, 142, 0.7), rgba(44, 123, 229, 0.4));
         }
 
-        @media (max-width: 1024px) {
-            .left {
-                width: 50%;
-                padding: 60px;
-            }
-
-            .right {
-                width: 50%;
-                margin-left: -40px;
-            }
+        .welcome-text {
+            position: absolute;
+            bottom: 80px;
+            left: 80px;
+            color: white;
+            z-index: 2;
+            max-width: 500px;
         }
 
+        .welcome-text h1 {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            line-height: 1.1;
+        }
+
+        .welcome-text p {
+            font-size: 18px;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        /* Responsive Design */
         @media (max-width: 768px) {
-            body {
-                overflow: auto;
-            }
-
-            .container {
+            .container-fluid {
                 flex-direction: column;
             }
 
             .left {
                 width: 100%;
-                border-radius: 0;
                 padding: 40px 20px;
-                box-shadow: none;
-            }
-
-            .login-card {
-                width: 100%;
-                max-width: 100%;
-                padding: 30px 20px;
+                border-top-right-radius: 0;
+                border-bottom-right-radius: 0;
+                border-radius: 0;
+                min-height: auto;
+                order: 2;
             }
 
             .right {
-                display: none;
+                width: 100%;
+                padding: 40px 20px;
+                border-top-left-radius: 0;
+                border-bottom-left-radius: 0;
+                border-radius: 0;
+                order: 1;
+                min-height: auto;
             }
-        }
 
-        @media (max-width: 480px) {
+            .welcome-text {
+                position: relative;
+                bottom: auto;
+                left: auto;
+                text-align: center;
+                margin-bottom: 30px;
+            }
+
+            .welcome-text h1 {
+                font-size: 28px;
+                margin-bottom: 15px;
+            }
+
+            .welcome-text p {
+                font-size: 14px;
+                line-height: 1.5;
+            }
+
             .brand {
-                font-size: 22px;
+                font-size: 24px;
+                justify-content: center;
+                margin-bottom: 20px;
             }
 
             .brand img {
@@ -213,53 +226,116 @@
                 height: 40px;
             }
 
+            .login-card {
+                margin: 0 auto 30px auto;
+                padding: 30px 20px;
+                max-width: 100%;
+            }
+
             h2 {
                 font-size: 20px;
+                margin-bottom: 20px;
+                text-align: center;
+            }
+
+            .form-label {
+                font-size: 13px;
+            }
+
+            .form-control {
+                padding: 12px 14px;
+                font-size: 14px;
+            }
+
+            .btn-primary {
+                padding: 14px;
+                font-size: 14px;
             }
         }
 
+        @media (max-width: 480px) {
+            .left {
+                padding: 30px 15px;
+            }
+
+            .right {
+                padding: 30px 15px;
+            }
+
+            .login-card {
+                padding: 25px 15px;
+            }
+
+            .brand {
+                font-size: 20px;
+            }
+
+            .brand img {
+                width: 35px;
+                height: 35px;
+            }
+
+            h2 {
+                font-size: 18px;
+            }
+
+            .welcome-text h1 {
+                font-size: 24px;
+            }
+
+            .welcome-text p {
+                font-size: 13px;
+            }
+        }
     </style>
 </head>
-
 <body>
 
-<div class="container">
+    <div class="container-fluid">
+        <div class="left">
+            <a href="/" class="brand">
+                <img src="{{ asset('images/logo.png') }}" alt="Logo">
+                <span>CityCare</span>
+            </a>
 
-    <div class="left">
+            <div class="login-card">
+                <h2>Welcome Back!</h2>
 
-        <div class="brand">
-            <img src="{{ asset('images/logo.png') }}">
-            Medicure
-        </div>
+                @if(session('error'))
+                    <div class="alert alert-danger border-0 rounded-3 mb-4">
+                        {{ session('error') }}
+                    </div>
+                @endif
 
-        <div class="login-card">
+                <form action="{{ route('login.post') }}" method="POST">
+                    @csrf
+                    <div class="mb-3">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" name="email" class="form-control" placeholder="name@citycare.com" required>
+                    </div>
 
-            <h2>Login</h2>
+                    <div class="mb-4">
+                        <label class="form-label">Password</label>
+                        <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
+                    </div>
 
-            @if(session('error'))
-                <p class="error">{{ session('error') }}</p>
-            @endif
+                    <button type="submit" class="btn btn-primary w-100">Sign In</button>
+                </form>
 
-            <form method="POST" action="{{ route('login') }}">
-                @csrf
-
-                <input type="email" name="email" placeholder="Email address" required>
-                <input type="password" name="password" placeholder="Password" required>
-
-                <button type="submit">Login</button>
-            </form>
-
-            <div class="link">
-                <p>Don’t have an account? <a href="/register">Create account</a></p>
+                <div class="mt-4 text-center">
+                    <span class="text-muted small">Don't have an account?</span>
+                    <a href="{{ route('register') }}" class="text-primary small fw-bold text-decoration-none ms-1">Register Now</a>
+                </div>
             </div>
-
         </div>
 
+        <div class="right">
+            <div class="welcome-text">
+                <h1>Professional Healthcare Excellence</h1>
+                <p>Welcome to CityCare Medical Centre. We are committed to providing the highest quality medical care with compassion and innovation.</p>
+            </div>
+        </div>
     </div>
-
-    <div class="right"></div>
-
-</div>
 
 </body>
 </html>
