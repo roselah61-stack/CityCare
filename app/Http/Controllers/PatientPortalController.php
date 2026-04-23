@@ -65,25 +65,17 @@ class PatientPortalController extends Controller
 
     public function profile()
     {
-        $user = Auth::user();
-        
-        // Try to get patient record, if not found use user data
-        $patient = Patient::where('email', $user->email)->first();
-        
-        if (!$patient) {
-            // Create a patient record from user data if it doesn't exist
-            $patient = new \stdClass();
-            $patient->name = $user->name;
-            $patient->email = $user->email;
-            $patient->phone = null;
-            $patient->address = null;
-            $patient->date_of_birth = null;
-            $patient->emergency_contact = null;
-            $patient->medical_history = null;
-            $patient->allergies = null;
+        try {
+            $user = Auth::user();
+            
+            // Use the user object directly since patients are users with patient role
+            $patient = $user;
+            
+            return view('patient.profile', compact('patient'));
+        } catch (\Exception $e) {
+            \Log::error('Profile error: ' . $e->getMessage());
+            return back()->with('error', 'Unable to load profile. Please try again.');
         }
-        
-        return view('patient.profile', compact('patient'));
     }
 
     public function updateProfile(Request $request)
@@ -205,14 +197,19 @@ class PatientPortalController extends Controller
 
     public function medicalHistory()
     {
-        $patient = Auth::user();
-        
-        $consultations = Consultation::with(['doctor', 'prescription.items'])
-            ->where('patient_id', $patient->id)
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        try {
+            $patient = Auth::user();
+            
+            $consultations = Consultation::with(['doctor', 'prescription.items'])
+                ->where('patient_id', $patient->id)
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
 
-        return view('patient.medical_history', compact('consultations'));
+            return view('patient.medical_history', compact('consultations'));
+        } catch (\Exception $e) {
+            \Log::error('Medical history error: ' . $e->getMessage());
+            return back()->with('error', 'Unable to load medical history. Please try again.');
+        }
     }
 
     public function showConsultation($id)
