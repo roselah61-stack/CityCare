@@ -4,17 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Models\Appointment;
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class AppointmentController extends Controller
 {
     public function index(Request $request)
     {
-        $user = Auth::user();
-        $role = $user->role->name;
-        
-        $query = Appointment::with(['doctor', 'patient']);
+        try {
+            $user = Auth::user();
+            $role = $user->role->name;
+            
+            $query = Appointment::with(['doctor', 'patient']);
 
         // Apply role-based filtering
         if ($role === 'patient') {
@@ -93,19 +96,52 @@ class AppointmentController extends Controller
         }
 
         return view('appointments.index', compact('appointments', 'doctors'));
+        } catch (\Exception $e) {
+            Log::error('Error in AppointmentController@index: ' . $e->getMessage());
+            
+            // Return with error message
+            return back()->with('error', 'Unable to load appointments. Please try again.');
+        }
     }
 
     public function create()
     {
-        $doctors = User::whereHas('role', function ($q) {
-            $q->where('name', 'doctor');
-        })->get();
+        try {
+            // Get doctors with role relationship
+            $doctors = User::whereHas('role', function ($q) {
+                $q->where('name', 'doctor');
+            })->get();
 
-        $patients = User::whereHas('role', function ($q) {
-            $q->where('name', 'patient');
-        })->get();
+            // Get patients with role relationship
+            $patients = User::whereHas('role', function ($q) {
+                $q->where('name', 'patient');
+            })->get();
 
-        return view('appointments.create', compact('doctors', 'patients'));
+            return view('appointments.create', compact('doctors', 'patients'));
+        } catch (\Exception $e) {
+            Log::error('Error in AppointmentController@create: ' . $e->getMessage());
+            
+            // Fallback: Try to get users without role relationship
+            try {
+                $doctors = User::where('role_id', function($query) {
+                    $query->select('id')->from('roles')->where('name', 'doctor');
+                })->get();
+
+                $patients = User::where('role_id', function($query) {
+                    $query->select('id')->from('roles')->where('name', 'patient');
+                })->get();
+
+                return view('appointments.create', compact('doctors', 'patients'));
+            } catch (\Exception $fallbackError) {
+                Log::error('Fallback also failed in AppointmentController@create: ' . $fallbackError->getMessage());
+                
+                // Last resort: Return empty collections
+                return view('appointments.create', [
+                    'doctors' => collect(),
+                    'patients' => collect()
+                ]);
+            }
+        }
     }
 
     public function store(Request $request)
@@ -314,28 +350,38 @@ class AppointmentController extends Controller
     {
         $request->validate([
             'doctor_id' => 'required',
-            'date' => 'required|date'
+            'date' => 'required|date|after_or_equal:today'
         ]);
 
-        $bookedTimes = Appointment::where('doctor_id', $request->doctor_id)
-            ->where('appointment_date', $request->date)
-            ->whereIn('status', ['pending', 'confirmed'])
-            ->pluck('appointment_time')
-            ->toArray();
+        $doctorId = $request->doctor_id;
+        $date = $request->date;
 
-        // Standard hospital slots: 9:00 AM to 5:00 PM, every 30 mins
-        $slots = [];
-        $start = strtotime('09:00');
-        $end = strtotime('17:00');
+        // Use cache for better performance
+        $cacheKey = "availability_{$doctorId}_{$date}";
+        $slots = cache()->remember($cacheKey, 300, function () use ($doctorId, $date) {
+            // Optimized query with specific fields only
+            $bookedTimes = Appointment::where('doctor_id', $doctorId)
+                ->where('appointment_date', $date)
+                ->whereIn('status', ['pending', 'confirmed'])
+                ->pluck('appointment_time')
+                ->toArray();
 
-        while ($start <= $end) {
-            $time = date('H:i', $start);
-            $slots[] = [
-                'time' => $time,
-                'available' => !in_array($time . ':00', $bookedTimes)
-            ];
-            $start = strtotime('+30 minutes', $start);
-        }
+            // Generate standard hospital slots: 9:00 AM to 5:00 PM, every 30 mins
+            $slots = [];
+            $start = strtotime('09:00');
+            $end = strtotime('17:00');
+
+            while ($start <= $end) {
+                $time = date('H:i', $start);
+                $slots[] = [
+                    'time' => $time,
+                    'available' => !in_array($time, $bookedTimes)
+                ];
+                $start = strtotime('+30 minutes', $start);
+            }
+
+            return $slots;
+        });
 
         return response()->json($slots);
     }
