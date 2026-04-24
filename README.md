@@ -35,7 +35,7 @@ No	Role	Email	Password
 3	Pharmacist	josephlubega@citycare.ug	joseph@2026
 4	Receptionist	gracenamukasa@citycare.ug	grace@2026
 5	Cashier	paul@citycare.com	Paul@2026
-6	Patient	gracenamukasa@citycare.ug	grace@2026
+6	Patient	johnmugisha@gmail.com	john@2026
 
 Conclusion
 After completing the above steps, the system will be ready for use. You can log in using the provided accounts and explore different features.
