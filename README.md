@@ -31,11 +31,12 @@ Run the development server and open the system in your browser.
 Default Login Credentials
 No	Role	Email	Password
 1	Admin	nrosemary4444@gmail.com	roselah@2026
-2	Doctor	sarahnankya@citycare.ug	sarah@2026
-3	Pharmacist	josephlubega@citycare.ug	joseph@2026
-4	Receptionist	gracenamukasa@citycare.ug	grace@2026
-5	Cashier	paul@citycare.com	Paul@2026
-6	Patient	johnmugisha@gmail.com	john@2026
+2	Doctor	sarah.nankya@citycare.ug	password123
+3	Pharmacist	joseph.lubega@citycare.ug	password123
+4	Receptionist	grace.namukasa@citycare.ug	password123
+5	Cashier	davis@citycare.com	password123
+6	Patient	john.mugisha@gmail.com	password123
+
 
 Conclusion
 After completing the above steps, the system will be ready for use. You can log in using the provided accounts and explore different features.
