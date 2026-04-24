@@ -91,12 +91,29 @@ class SampleDataSeeder extends Seeder
                 'gender' => 'female',
                 'address' => 'Plot 45, Entebbe Road, Wakiso',
                 'status' => 'Active'
+            ],
+            [
+                'name' => 'David Ssenyonjo',
+                'email' => 'david.ssenyonjo@yahoo.com',
+                'phone' => '0756123456',
+                'gender' => 'male',
+                'address' => 'Ntinda, Kampala',
+                'status' => 'Active'
+            ],
+            [
+                'name' => 'Grace Babirye',
+                'email' => 'grace.babirye@hotmail.com',
+                'phone' => '0789234567',
+                'gender' => 'female',
+                'address' => 'Bukoto, Kampala',
+                'status' => 'Active'
             ]
         ];
 
         $createdPatients = [];
         foreach ($patients as $patientData) {
-            $patient = Patient::updateOrCreate(['email' => $patientData['email']], $patientData);
+            // Use phone as unique key since it has unique constraint
+            $patient = Patient::updateOrCreate(['phone' => $patientData['phone']], $patientData);
             $createdPatients[] = $patient;
 
             // Create corresponding user accounts for patients
@@ -176,7 +193,7 @@ class SampleDataSeeder extends Seeder
         echo "- 3 Doctors\n";
         echo "- 1 Pharmacist\n";
         echo "- 1 Receptionist\n";
-        echo "- 2 Patients with user accounts\n";
+        echo "- 4 Patients with user accounts\n";
         echo "- Multiple appointments and consultations\n";
         echo "- Sample bills and payments\n";
     }
