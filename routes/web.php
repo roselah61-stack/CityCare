@@ -246,30 +246,108 @@ Route::middleware(['auth'])->group(function () {
         }
     });
 
-    // Bypass route for appointments/create without middleware
+    // Bypass route for appointments/create without middleware - COMPLETELY MINIMAL
     Route::get('/appointments/create-bypass', function () {
         try {
-            // Simulate what the controller does without dependencies
-            $doctors = [];
-            $patients = [];
-            
-            // Try to get basic data
-            try {
-                $doctors = \App\Models\User::where('role_id', 2)->get(); // Assuming doctor role_id = 2
-            } catch (\Exception $e) {
-                $doctors = collect([]);
-            }
-            
-            try {
-                $patients = \App\Models\User::where('role_id', 4)->get(); // Assuming patient role_id = 4
-            } catch (\Exception $e) {
-                $patients = collect([]);
-            }
-            
-            return view('appointments.create', compact('doctors', 'patients'));
+            // Return a simple HTML form without any database calls
+            return '
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Schedule Appointment - Minimal</title>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+            </head>
+            <body>
+                <div class="container mt-4">
+                    <h2>Schedule Appointment (Minimal Version)</h2>
+                    <div class="alert alert-info">
+                        This is a minimal version to test basic functionality. 
+                        If this works, the issue is with database dependencies.
+                    </div>
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label">Patient Name</label>
+                            <input type="text" class="form-control" placeholder="Enter patient name">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Doctor Name</label>
+                            <input type="text" class="form-control" placeholder="Enter doctor name">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Appointment Date</label>
+                            <input type="date" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Appointment Time</label>
+                            <input type="time" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Reason</label>
+                            <textarea class="form-control" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Schedule Appointment</button>
+                    </form>
+                </div>
+            </body>
+            </html>';
             
         } catch (\Exception $e) {
             return 'Bypass route error: ' . $e->getMessage() . ' Line: ' . $e->getLine();
+        }
+    });
+
+    // Test database connection
+    Route::get('/test-database', function () {
+        try {
+            // Test basic database connection
+            $connection = \DB::connection();
+            $databaseName = $connection->getDatabaseName();
+            
+            return response()->json([
+                'database_connected' => true,
+                'database_name' => $databaseName,
+                'connection_details' => 'Database connection working'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'database_connected' => false,
+                'error' => $e->getMessage()
+            ]);
+        }
+    });
+
+    // Test if users table exists
+    Route::get('/test-users-table', function () {
+        try {
+            $userCount = \DB::table('users')->count();
+            return response()->json([
+                'users_table_exists' => true,
+                'user_count' => $userCount
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'users_table_exists' => false,
+                'error' => $e->getMessage()
+            ]);
+        }
+    });
+
+    // Test if roles table exists
+    Route::get('/test-roles-table', function () {
+        try {
+            $roleCount = \DB::table('roles')->count();
+            $roles = \DB::table('roles')->get();
+            return response()->json([
+                'roles_table_exists' => true,
+                'role_count' => $roleCount,
+                'roles' => $roles
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'roles_table_exists' => false,
+                'error' => $e->getMessage()
+            ]);
         }
     });
     Route::get('/debug-role', function() {
