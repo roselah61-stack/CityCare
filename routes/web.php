@@ -198,6 +198,82 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/test-appointments', function () {
         return 'Appointments route works!';
     });
+
+    // Simplified appointment create route for debugging
+    Route::get('/appointments/create-simple', function () {
+        try {
+            $user = auth()->user();
+            if (!$user) {
+                return 'Not authenticated';
+            }
+            
+            // Test basic user data
+            $userInfo = [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role_id' => $user->role_id
+            ];
+            
+            // Test basic database query
+            try {
+                $userCount = \App\Models\User::count();
+                $userInfo['user_count'] = $userCount;
+            } catch (\Exception $e) {
+                $userInfo['user_count_error'] = $e->getMessage();
+            }
+            
+            // Test role query
+            try {
+                $roles = \App\Models\Role::all();
+                $userInfo['roles'] = $roles->pluck('name')->toArray();
+            } catch (\Exception $e) {
+                $userInfo['roles_error'] = $e->getMessage();
+            }
+            
+            return response()->json($userInfo);
+            
+        } catch (\Exception $e) {
+            return 'Error: ' . $e->getMessage();
+        }
+    });
+
+    // Test appointment controller without middleware
+    Route::get('/test-appointment-controller', function () {
+        try {
+            $controller = new \App\Http\Controllers\AppointmentController();
+            return 'Controller instantiated successfully';
+        } catch (\Exception $e) {
+            return 'Controller error: ' . $e->getMessage();
+        }
+    });
+
+    // Bypass route for appointments/create without middleware
+    Route::get('/appointments/create-bypass', function () {
+        try {
+            // Simulate what the controller does without dependencies
+            $doctors = [];
+            $patients = [];
+            
+            // Try to get basic data
+            try {
+                $doctors = \App\Models\User::where('role_id', 2)->get(); // Assuming doctor role_id = 2
+            } catch (\Exception $e) {
+                $doctors = collect([]);
+            }
+            
+            try {
+                $patients = \App\Models\User::where('role_id', 4)->get(); // Assuming patient role_id = 4
+            } catch (\Exception $e) {
+                $patients = collect([]);
+            }
+            
+            return view('appointments.create', compact('doctors', 'patients'));
+            
+        } catch (\Exception $e) {
+            return 'Bypass route error: ' . $e->getMessage() . ' Line: ' . $e->getLine();
+        }
+    });
     Route::get('/debug-role', function() {
         if (!auth()->check()) {
             return 'Not logged in';
