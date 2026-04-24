@@ -19,16 +19,26 @@ class SampleDataSeeder extends Seeder
     public function run()
     {
         // Get or create roles
+        $adminRole = Role::where('name', 'admin')->first();
         $doctorRole = Role::where('name', 'doctor')->first();
         $pharmacistRole = Role::where('name', 'pharmacist')->first();
         $receptionistRole = Role::where('name', 'receptionist')->first();
         $patientRole = Role::where('name', 'patient')->first();
+        $cashierRole = Role::where('name', 'cashier')->first();
+
+        // Create Admin User
+        $admin = User::updateOrCreate(['email' => 'rosemary4444@gmail.com'], [
+            'name' => 'Rosemary NABUKEERA',
+            'password' => Hash::make('roselah@2026'),
+            'role_id' => $adminRole->id,
+            'email_verified_at' => now()
+        ]);
 
         // Create Doctors
         $doctors = [
             [
                 'name' => 'Dr. Sarah Nankya',
-                'email' => 'sarah.nankya@citycare.ug',
+                'email' => 'sarahahnankya@citycare.ug',
                 'phone' => '0772123456',
                 'specialization' => 'General Medicine',
                 'license_number' => 'UG-MD-2020-001'
@@ -59,7 +69,7 @@ class SampleDataSeeder extends Seeder
         }
 
         // Create Pharmacist
-        $pharmacist = User::updateOrCreate(['email' => 'joseph.lubega@citycare.ug'], [
+        $pharmacist = User::updateOrCreate(['email' => 'josephlubega@citycare.ug'], [
             'name' => 'Joseph Lubega',
             'password' => Hash::make('password123'),
             'role_id' => $pharmacistRole->id,
@@ -67,10 +77,18 @@ class SampleDataSeeder extends Seeder
         ]);
 
         // Create Receptionist
-        $receptionist = User::updateOrCreate(['email' => 'grace.namukasa@citycare.ug'], [
+        $receptionist = User::updateOrCreate(['email' => 'gracenamukasa@citycare.ug'], [
             'name' => 'Grace Namukasa',
             'password' => Hash::make('password123'),
             'role_id' => $receptionistRole->id,
+            'email_verified_at' => now()
+        ]);
+
+        // Create Cashier
+        $cashier = User::updateOrCreate(['email' => 'paul@citycare.com'], [
+            'name' => 'Paul',
+            'password' => Hash::make('paul@2026'),
+            'role_id' => $cashierRole->id,
             'email_verified_at' => now()
         ]);
 
@@ -78,7 +96,7 @@ class SampleDataSeeder extends Seeder
         $patients = [
             [
                 'name' => 'John Mugisha',
-                'email' => 'john.mugisha@gmail.com',
+                'email' => 'johnmugisha@gmail.com',
                 'phone' => '0771234567',
                 'gender' => 'male',
                 'address' => 'Plot 12, Kiwatule Road, Kampala',
@@ -128,8 +146,8 @@ class SampleDataSeeder extends Seeder
         // Create basic appointments (simplified)
         try {
             $appointment1 = Appointment::create([
-                'patient_id' => User::where('email', 'john.mugisha@gmail.com')->first()->id,
-                'doctor_id' => User::where('email', 'sarah.nankya@citycare.ug')->first()->id,
+                'patient_id' => User::where('email', 'johnmugisha@gmail.com')->first()->id,
+                'doctor_id' => User::where('email', 'sarahahnankya@citycare.ug')->first()->id,
                 'appointment_date' => Carbon::tomorrow()->format('Y-m-d'),
                 'appointment_time' => '10:30:00',
                 'status' => 'confirmed',
@@ -139,8 +157,8 @@ class SampleDataSeeder extends Seeder
             // Create consultation linked to appointment
             Consultation::create([
                 'appointment_id' => $appointment1->id,
-                'patient_id' => User::where('email', 'john.mugisha@gmail.com')->first()->id,
-                'doctor_id' => User::where('email', 'sarah.nankya@citycare.ug')->first()->id,
+                'patient_id' => User::where('email', 'johnmugisha@gmail.com')->first()->id,
+                'doctor_id' => User::where('email', 'sarahahnankya@citycare.ug')->first()->id,
                 'diagnosis' => 'Essential Hypertension - Well controlled',
                 'notes' => 'Blood pressure: 120/80 mmHg. Patient compliant with medication.',
                 'blood_pressure' => '120/80',
