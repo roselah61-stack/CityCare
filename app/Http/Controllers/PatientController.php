@@ -76,9 +76,9 @@ class PatientController extends Controller
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20|unique:patients,phone',
             'email' => 'nullable|email|max:255|unique:patients,email',
-            'gender' => 'required|in:male,female,other',
+            'gender' => 'required|in:Male,Female',
             'address' => 'nullable|string',
-            'status' => 'required|string'
+            'status' => 'required|in:Active,Discharged,Deceased'
         ]);
 
         Patient::create([
@@ -123,9 +123,9 @@ class PatientController extends Controller
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20|unique:patients,phone,' . $id,
             'email' => 'nullable|email|max:255|unique:patients,email,' . $id,
-            'gender' => 'required|in:male,female,other',
+            'gender' => 'required|in:Male,Female',
             'address' => 'nullable|string',
-            'status' => 'required|string'
+            'status' => 'required|in:Active,Discharged,Deceased'
         ]);
 
         $patient->update([
