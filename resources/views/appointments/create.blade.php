@@ -34,14 +34,12 @@
                 <div class="row g-4 mb-4">
                     <div class="col-md-6">
                         <label class="form-label fw-600">Select Patient</label>
-                        <select name="patient_id" class="form-select @error('patient_id') is-invalid @enderror" required>
-                            <option value="">-- Choose Patient --</option>
-                            @foreach($patients as $patient)
-                            <option value="{{ $patient->id }}" {{ (old('patient_id') == $patient->id || (Auth::user()->role->name == 'patient' && Auth::id() == $patient->id)) ? 'selected' : '' }}>
-                                {{ $patient->name }} ({{ $patient->email }})
-                            </option>
-                            @endforeach
-                        </select>
+                        <div class="position-relative">
+                            <input type="text" id="patientSearch" class="form-control @error('patient_id') is-invalid @enderror" 
+                                   placeholder="Search patients..." autocomplete="off">
+                            <input type="hidden" name="patient_id" id="patient_id" value="{{ old('patient_id') }}" required>
+                            <div id="patientDropdown" class="position-absolute w-100 bg-white border rounded mt-1 shadow-sm" style="z-index: 1000; max-height: 200px; overflow-y: auto; display: none;"></div>
+                        </div>
                         @error('patient_id')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -53,7 +51,7 @@
                             <option value="">-- Choose Doctor --</option>
                             @foreach($doctors as $doctor)
                             <option value="{{ $doctor->id }}" {{ old('doctor_id') == $doctor->id ? 'selected' : '' }}>
-                                Dr. {{ $doctor->name }}
+                                Dr. {{ $doctor->name }} {{ $doctor->specialization ? '(' . $doctor->specialization . ')' : '' }}
                             </option>
                             @endforeach
                         </select>
@@ -109,61 +107,289 @@ document.addEventListener('DOMContentLoaded', function() {
     const slotsContainer = document.getElementById('slots-container');
     const timeInput = document.getElementById('appointment_time');
     const submitBtn = document.getElementById('submitBtn');
+    const patientSearch = document.getElementById('patientSearch');
+    const patientId = document.getElementById('patient_id');
+    const patientDropdown = document.getElementById('patientDropdown');
+
+    // Patient data from server
+    const patients = @json($patients->map(function($patient) {
+        return {
+            id: $patient->id,
+            name: $patient->name,
+            email: $patient->email,
+            phone: $patient->phone ?? ''
+        };
+    }));
+
+    // Patient search functionality
+    let selectedPatient = null;
+    let searchTimeout;
+
+    patientSearch.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        const query = this.value.trim();
+        
+        if (query.length < 2) {
+            patientDropdown.style.display = 'none';
+            return;
+        }
+
+        searchTimeout = setTimeout(() => {
+            const filtered = patients.filter(p => 
+                p.name.toLowerCase().includes(query.toLowerCase()) ||
+                p.email.toLowerCase().includes(query.toLowerCase()) ||
+                (p.phone && p.phone.includes(query))
+            );
+
+            patientDropdown.innerHTML = '';
+            
+            if (filtered.length === 0) {
+                patientDropdown.innerHTML = '<div class="p-2 text-muted small">No patients found</div>';
+            } else {
+                filtered.forEach(patient => {
+                    const item = document.createElement('div');
+                    item.className = 'p-2 patient-option cursor-pointer hover-bg-light';
+                    item.innerHTML = `
+                        <div class="fw-bold">${patient.name}</div>
+                        <div class="small text-muted">${patient.email}</div>
+                        ${patient.phone ? `<div class="small text-muted">${patient.phone}</div>` : ''}
+                    `;
+                    item.onclick = () => selectPatient(patient);
+                    patientDropdown.appendChild(item);
+                });
+            }
+            
+            patientDropdown.style.display = 'block';
+        }, 300);
+    });
+
+    function selectPatient(patient) {
+        selectedPatient = patient;
+        patientSearch.value = patient.name;
+        patientId.value = patient.id;
+        patientDropdown.style.display = 'none';
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!patientSearch.contains(e.target) && !patientDropdown.contains(e.target)) {
+            patientDropdown.style.display = 'none';
+        }
+    });
+
+    // Enhanced availability check with caching and debouncing
+    const availabilityCache = new Map();
+    let availabilityTimeout;
 
     function fetchSlots() {
         const doctorId = doctorSelect.value;
         const date = dateInput.value;
 
-        if (!doctorId || !date) return;
+        if (!doctorId || !date) {
+            slotsContainer.innerHTML = '<p class="text-muted small mb-0">Please select a doctor and date to see available slots.</p>';
+            submitBtn.disabled = true;
+            return;
+        }
+
+        // Check cache first
+        const cacheKey = `${doctorId}-${date}`;
+        if (availabilityCache.has(cacheKey)) {
+            renderSlots(availabilityCache.get(cacheKey));
+            return;
+        }
 
         slotsContainer.innerHTML = '<div class="spinner-border spinner-border-sm text-primary" role="status"></div> <span class="ms-2 small text-muted">Checking availability...</span>';
 
-        fetch(`{{ route('appointments.checkAvailability') }}?doctor_id=${doctorId}&date=${date}`)
-            .then(response => response.json())
-            .then(slots => {
-                slotsContainer.innerHTML = '';
-                if (slots.length === 0) {
-                    slotsContainer.innerHTML = '<p class="text-danger small mb-0"><i class="bi bi-exclamation-circle me-1"></i> No slots available for this day.</p>';
-                    return;
-                }
-
-                slots.forEach(slot => {
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = `btn btn-sm rounded-pill px-3 ${slot.available ? 'btn-outline-primary' : 'btn-light disabled'}`;
-                    btn.innerText = slot.time;
-                    btn.disabled = !slot.available;
-                    
-                    if (slot.available) {
-                        btn.onclick = () => {
-                            document.querySelectorAll('#slots-container .btn').forEach(b => {
-                                b.classList.remove('btn-primary', 'text-white');
-                                b.classList.add('btn-outline-primary');
-                            });
-                            btn.classList.remove('btn-outline-primary');
-                            btn.classList.add('btn-primary', 'text-white');
-                            timeInput.value = slot.time;
-                            submitBtn.disabled = false;
-                        };
-                    }
-                    
-                    slotsContainer.appendChild(btn);
+        // Debounce the API call
+        clearTimeout(availabilityTimeout);
+        availabilityTimeout = setTimeout(() => {
+            fetch(`{{ route('appointments.checkAvailability') }}?doctor_id=${doctorId}&date=${date}`)
+                .then(response => response.json())
+                .then(slots => {
+                    availabilityCache.set(cacheKey, slots);
+                    renderSlots(slots);
+                })
+                .catch(error => {
+                    console.error('Error checking availability:', error);
+                    slotsContainer.innerHTML = '<p class="text-danger small mb-0"><i class="bi bi-exclamation-triangle me-1"></i> Error checking availability. Please try again.</p>';
                 });
-            });
+        }, 500);
     }
 
-    doctorSelect.onchange = fetchSlots;
-    dateInput.onchange = fetchSlots;
+    function renderSlots(slots) {
+        slotsContainer.innerHTML = '';
+        
+        if (slots.length === 0) {
+            slotsContainer.innerHTML = '<p class="text-danger small mb-0"><i class="bi bi-exclamation-circle me-1"></i> No slots available for this day.</p>';
+            submitBtn.disabled = true;
+            return;
+        }
+
+        const availableSlots = slots.filter(slot => slot.available);
+        
+        if (availableSlots.length === 0) {
+            slotsContainer.innerHTML = '<p class="text-warning small mb-0"><i class="bi bi-clock me-1"></i> All slots are booked for this day.</p>';
+            submitBtn.disabled = true;
+            return;
+        }
+
+        // Group slots by time periods
+        const morningSlots = availableSlots.filter(s => {
+            const hour = parseInt(s.time.split(':')[0]);
+            return hour >= 9 && hour < 12;
+        });
+        
+        const afternoonSlots = availableSlots.filter(s => {
+            const hour = parseInt(s.time.split(':')[0]);
+            return hour >= 12 && hour < 17;
+        });
+
+        if (morningSlots.length > 0) {
+            const morningGroup = document.createElement('div');
+            morningGroup.className = 'mb-3';
+            morningGroup.innerHTML = '<div class="small text-muted mb-2">Morning</div>';
+            morningSlots.forEach(slot => createSlotButton(slot, morningGroup));
+            slotsContainer.appendChild(morningGroup);
+        }
+
+        if (afternoonSlots.length > 0) {
+            const afternoonGroup = document.createElement('div');
+            afternoonGroup.innerHTML = '<div class="small text-muted mb-2">Afternoon</div>';
+            afternoonSlots.forEach(slot => createSlotButton(slot, afternoonGroup));
+            slotsContainer.appendChild(afternoonGroup);
+        }
+    }
+
+    function createSlotButton(slot, container) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn btn-sm rounded-pill px-3 me-2 mb-2 btn-outline-primary';
+        btn.innerText = formatTime(slot.time);
+        
+        btn.onclick = () => {
+            // Remove previous selection
+            document.querySelectorAll('#slots-container .btn').forEach(b => {
+                b.classList.remove('btn-primary', 'text-white');
+                b.classList.add('btn-outline-primary');
+            });
+            
+            // Select current slot
+            btn.classList.remove('btn-outline-primary');
+            btn.classList.add('btn-primary', 'text-white');
+            timeInput.value = slot.time;
+            submitBtn.disabled = false;
+            
+            // Auto-focus on reason field
+            document.querySelector('textarea[name="reason"]').focus();
+        };
+        
+        container.appendChild(btn);
+    }
+
+    function formatTime(time) {
+        const [hours, minutes] = time.split(':');
+        const hour = parseInt(hours);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const displayHour = hour > 12 ? hour - 12 : hour;
+        return `${displayHour}:${minutes} ${ampm}`;
+    }
+
+    // Auto-update functionality
+    function setupAutoUpdate() {
+        // Update availability every 30 seconds if doctor and date are selected
+        setInterval(() => {
+            if (doctorSelect.value && dateInput.value) {
+                fetchSlots();
+            }
+        }, 30000);
+
+        // Clear cache when date changes to tomorrow
+        const today = new Date().toISOString().split('T')[0];
+        if (dateInput.value < today) {
+            availabilityCache.clear();
+        }
+    }
+
+    // Event listeners
+    doctorSelect.addEventListener('change', () => {
+        timeInput.value = '';
+        submitBtn.disabled = true;
+        fetchSlots();
+    });
+
+    dateInput.addEventListener('change', () => {
+        timeInput.value = '';
+        submitBtn.disabled = true;
+        fetchSlots();
+    });
+
+    // Initialize auto-update
+    setupAutoUpdate();
+
+    // Form validation
+    document.getElementById('appointmentForm').addEventListener('submit', function(e) {
+        if (!patientId.value) {
+            e.preventDefault();
+            alert('Please select a patient');
+            patientSearch.focus();
+            return false;
+        }
+    });
 });
 </script>
 <style>
 #slots-container .btn {
     min-width: 90px;
     font-weight: 600;
+    transition: all 0.2s ease;
 }
 #slots-container .btn-primary {
     background-color: var(--primary) !important;
     border-color: var(--primary) !important;
+}
+#slots-container .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.patient-option {
+    border-bottom: 1px solid var(--border);
+    transition: background-color 0.2s ease;
+}
+.patient-option:hover {
+    background-color: var(--bg-secondary);
+}
+.patient-option:last-child {
+    border-bottom: none;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.hover-bg-light:hover {
+    background-color: #f8f9fa;
+}
+
+#patientDropdown {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 </style>
 @endpush
