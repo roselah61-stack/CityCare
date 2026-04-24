@@ -169,6 +169,35 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Debug route to check user role
+    Route::get('/debug-user', function () {
+        if (!auth()->check()) {
+            return response()->json(['error' => 'Not authenticated'], 401);
+        }
+        
+        $user = auth()->user();
+        $role = null;
+        
+        try {
+            $role = $user->role ? $user->role->name : null;
+        } catch (\Exception $e) {
+            $role = 'Error: ' . $e->getMessage();
+        }
+        
+        return response()->json([
+            'user_id' => $user->id,
+            'user_email' => $user->email,
+            'user_name' => $user->name,
+            'role_id' => $user->role_id,
+            'role_name' => $role,
+            'authenticated' => true,
+            'environment' => app()->environment()
+        ]);
+    });
+    
+    // Simple appointment route without middleware for testing
+    Route::get('/test-appointments', function () {
+        return 'Appointments route works!';
+    });
     Route::get('/debug-role', function() {
         if (!auth()->check()) {
             return 'Not logged in';
